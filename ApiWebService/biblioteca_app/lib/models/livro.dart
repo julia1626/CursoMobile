@@ -3,10 +3,10 @@ class Livro {
   final String? id; // pode ser nulo inicialmente -> id será atribuído pelo BD
   final String titulo;
   final String autor;
-  bool disponivel;
+  final bool disponivel;
 
   // construtor
-  Livro({ this.id, required this.titulo, required this.autor, this.disponivel = true,});
+  Livro({ this.id, required this.titulo, required this.autor, required this.disponivel,});
 
   // métodos
   // toJson
@@ -22,6 +22,6 @@ class Livro {
         id: json["id"]?.toString(),
         titulo: json["titulo"].toString(),
         autor: json["autor"].toString(),
-        disponivel: json["disponivel"] ?? true,
+        disponivel: json["disponivel"] == 1 ? true : false,
       );
 }
