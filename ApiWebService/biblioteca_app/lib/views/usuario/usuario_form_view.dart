@@ -1,11 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:biblioteca_app/controllers/usuario_controller.dart';
 import 'package:biblioteca_app/models/usuario.dart';
-import 'package:biblioteca_app/views/usuario/usuario_list_view.dart';
-import 'package:flutter/material.dart';
 
 class UsuarioFormView extends StatefulWidget {
-  //atributo
-  final Usuario? user;
+  final Usuario? user; // se for nulo, é cadastro novo
 
   const UsuarioFormView({super.key, this.user});
 
@@ -14,87 +12,87 @@ class UsuarioFormView extends StatefulWidget {
 }
 
 class _UsuarioFormViewState extends State<UsuarioFormView> {
-  //atributos
-  final _formkey = GlobalKey<FormState>(); // validação do formulário
+  final _formKey = GlobalKey<FormState>();
   final _controller = UsuarioController();
-  final _nomeField = TextEditingController(); //controla o campo nome
-  final _emailField = TextEditingController(); //controla o campo email
+
+  final _nomeField = TextEditingController();
+  final _emailField = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    if(widget.user != null){
+    if (widget.user != null) {
       _nomeField.text = widget.user!.nome;
       _emailField.text = widget.user!.email;
     }
   }
 
-  //salvar novo usuario
-  void _save() async{
-    if(_formkey.currentState!.validate()){
-      final user = Usuario(
-        id: DateTime.now().millisecond.toString(), //criar um ID 
-        nome: _nomeField.text.trim(), 
-        email: _emailField.text.trim());
+  void _salvar() async {
+    if (_formKey.currentState!.validate()) {
+      final usuario = Usuario(
+        id: widget.user?.id, // mantém id se for edição
+        nome: _nomeField.text,
+        email: _emailField.text,
+      );
+
       try {
-        await _controller.create(user);
-        //mensagem de criação com sucesso
+        if (widget.user == null) {
+          await _controller.create(usuario); // cria novo
+        } else {
+          await _controller.update(usuario); // edita existente
+        }
+        Navigator.pop(context); // volta para list view (navbar reaparece)
       } catch (e) {
-        //tratar erro
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erro ao salvar usuário: $e")),
+        );
       }
-      Navigator.pop(context);
-      Navigator.pushReplacement(context, 
-      MaterialPageRoute(builder: (context)=> UsuarioListView()));
     }
   }
 
-  //atualizar usuario existente
-  void _update() async{
-    if(_formkey.currentState!.validate()){
-      final user = Usuario(
-        id: widget.user?.id!, //pegar id existente
-        nome: _nomeField.text.trim(), 
-        email: _emailField.text.trim());
-      try {
-        await _controller.update(user);
-        //mensagem de criação com sucesso
-      } catch (e) {
-        //tratar erro
-      }
-      Navigator.pop(context);
-      Navigator.pushReplacement(context, 
-      MaterialPageRoute(builder: (context)=> UsuarioListView()));
-    }
-  }
-
-  //build Tela
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.user == null ? "Novo Usuário" : "Editar Usuário"),),
+        title:
+            Text(widget.user == null ? "Novo Usuário" : "Editar Usuário"),
+      ),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
-          key: _formkey,
+          key: _formKey,
           child: Column(
             children: [
               TextFormField(
                 controller: _nomeField,
-                decoration: InputDecoration(labelText: "Nome"),
-                validator: (value) => value!.isEmpty ? "Informe o Nome" : null,
+                decoration: const InputDecoration(labelText: "Nome"),
+                validator: (value) =>
+                    value == null || value.isEmpty ? "Informe o nome" : null,
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _emailField,
-                decoration: InputDecoration(labelText: "Email"),
-                validator: (value) => value!.isEmpty ? "Informe o Email" : null,
+                decoration: const InputDecoration(labelText: "Email"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Informe o email";
+                  }
+                  if (!value.contains("@")) {
+                    return "Email inválido";
+                  }
+                  return null;
+                },
               ),
-              SizedBox(height: 20,),
-              ElevatedButton(
-                onPressed: widget.user == null ? _save : _update, 
-                child: Text(widget.user ==null? "Salvar" : "Atualizar"))
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: _salvar,
+                icon: const Icon(Icons.save),
+                label: const Text("Salvar"),
+              ),
             ],
-          )),),
+          ),
+        ),
+      ),
     );
   }
 }

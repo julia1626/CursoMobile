@@ -1,77 +1,55 @@
+import 'package:flutter/material.dart';
 import 'package:biblioteca_app/controllers/livro_controller.dart';
 import 'package:biblioteca_app/models/livro.dart';
-import 'package:biblioteca_app/views/livro/livro_list_view.dart';
-import 'package:flutter/material.dart';
 
 class LivroFormView extends StatefulWidget {
-  //atributo
-  final Livro? livro;
+  final Livro? book; // se for nulo, é cadastro novo
 
-  const LivroFormView({super.key, this.livro});
+  const LivroFormView({super.key, this.book, Livro? livro});
 
   @override
   State<LivroFormView> createState() => _LivroFormViewState();
 }
 
 class _LivroFormViewState extends State<LivroFormView> {
-  //atributos
   final _formKey = GlobalKey<FormState>();
   final _controller = LivroController();
+
   final _tituloField = TextEditingController();
   final _autorField = TextEditingController();
-  bool _disponivel = true; //campo para disponibilidade
+  bool _disponivel = true;
 
   @override
   void initState() {
     super.initState();
-    if (widget.livro != null) {
-      _tituloField.text = widget.livro!.titulo;
-      _autorField.text = widget.livro!.autor;
-      _disponivel = widget.livro!.disponivel;
+    if (widget.book != null) {
+      _tituloField.text = widget.book!.titulo;
+      _autorField.text = widget.book!.autor;
+      _disponivel = widget.book!.disponivel;
     }
   }
 
-  //salvar novo livro
-  void _save() async {
+  void _salvar() async {
     if (_formKey.currentState!.validate()) {
       final livro = Livro(
-        id: DateTime.now().millisecond.toString(),
-        titulo: _tituloField.text.trim(),
-        autor: _autorField.text.trim(),
+        id: widget.book?.id, // mantém id se for edição
+        titulo: _tituloField.text,
+        autor: _autorField.text,
         disponivel: _disponivel,
       );
-      try {
-        await _controller.create(livro);
-      } catch (e) {
-        //tratar erro
-      }
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LivroListView()),
-      );
-    }
-  }
 
-  //atualizar livro existente
-  void _update() async {
-    if (_formKey.currentState!.validate()) {
-      final livro = Livro(
-        id: widget.livro!.id,
-        titulo: _tituloField.text.trim(),
-        autor: _autorField.text.trim(),
-        disponivel: _disponivel,
-      );
       try {
-        await _controller.update(livro);
+        if (widget.book == null) {
+          await _controller.create(livro); // cria novo
+        } else {
+          await _controller.update(livro); // edita existente
+        }
+        Navigator.pop(context); // volta para list view (navbar reaparece)
       } catch (e) {
-        //tratar erro
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erro ao salvar livro: $e")),
+        );
       }
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LivroListView()),
-      );
     }
   }
 
@@ -79,42 +57,43 @@ class _LivroFormViewState extends State<LivroFormView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.livro == null ? "Novo Livro" : "Editar Livro"),
+        title:
+            Text(widget.book == null ? "Novo Livro" : "Editar Livro"),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
               TextFormField(
                 controller: _tituloField,
-                decoration: InputDecoration(labelText: "Título"),
-                validator: (value) => value!.isEmpty ? "Informe o título" : null,
+                decoration: const InputDecoration(labelText: "Título"),
+                validator: (value) =>
+                    value == null || value.isEmpty ? "Informe o título" : null,
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _autorField,
-                decoration: InputDecoration(labelText: "Autor"),
-                validator: (value) => value!.isEmpty ? "Informe o autor" : null,
+                decoration: const InputDecoration(labelText: "Autor"),
+                validator: (value) =>
+                    value == null || value.isEmpty ? "Informe o autor" : null,
               ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Text("Disponível: "),
-                  Switch(
-                    value: _disponivel,
-                    onChanged: (val) {
-                      setState(() {
-                        _disponivel = val;
-                      });
-                    },
-                  ),
-                ],
+              const SizedBox(height: 16),
+              SwitchListTile(
+                title: const Text("Disponível"),
+                value: _disponivel,
+                onChanged: (value) {
+                  setState(() {
+                    _disponivel = value;
+                  });
+                },
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: widget.livro == null ? _save : _update,
-                child: Text(widget.livro == null ? "Salvar" : "Atualizar"),
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: _salvar,
+                icon: const Icon(Icons.save),
+                label: const Text("Salvar"),
               ),
             ],
           ),

@@ -1,14 +1,24 @@
 {
   "usuarios": [
     {
-      "id": "1",
-      "nome": "João Silva Oliver",
-      "email": "joao@gmail.com"
-    },
-    {
       "id": "2",
       "nome": "Maria Santos",
       "email": "maria@gmail.com"
+    },
+    {
+      "id": "663",
+      "nome": "Júlia",
+      "email": "julia@gmail.com"
+    },
+    {
+      "id": "80",
+      "nome": "helena",
+      "email": "he@gmail.com"
+    },
+    {
+      "id": null,
+      "nome": "Clara",
+      "email": "clara@gmail.com"
     }
   ],
   "livros": [
@@ -29,6 +39,12 @@
       "titulo": "Harry Potter",
       "autor": "JK Rowling",
       "disponivel": true
+    },
+    {
+      "id": null,
+      "titulo": "Antes de Partir",
+      "autor": "Charlie Donlea",
+      "disponivel": true
     }
   ],
   "emprestimos": [
@@ -39,6 +55,22 @@
       "data_emprestimo": "2025-08-22",
       "data_devolucao": "2025-09-01",
       "devolvido": false
+    },
+    {
+      "id": "1757070459434",
+      "usuario_id": "4",
+      "livro_id": "A Rainha Vermelha",
+      "dataEmprestimo": "27/08/2025",
+      "dataDevolucao": "04/09/2025",
+      "devolvido": false
+    },
+    {
+      "id": "1757071251599",
+      "usuario_id": "6",
+      "livro_id": "Antes de Partir",
+      "dataEmprestimo": "05/09/2025",
+      "dataDevolucao": "13/09/2025",
+      "devolvido": true
     }
   ]
 }

@@ -3,10 +3,19 @@ class Emprestimo {
   final String? id; // pode ser nulo inicialmente -> id será atribuído pelo BD
   final String usuario_id;
   final String livro_id;
+  final String dataEmprestimo;
+  final String dataDevolucao;
   final bool devolvido;
 
   // construtor
-  Emprestimo({this.id, required this.usuario_id, required this.livro_id, required this.devolvido,});
+  Emprestimo({
+    this.id,
+    required this.usuario_id,
+    required this.livro_id,
+    required this.dataEmprestimo,
+    required this.dataDevolucao,
+    required this.devolvido,
+  });
 
   // métodos
   // toJson
@@ -14,14 +23,20 @@ class Emprestimo {
         "id": id,
         "usuario_id": usuario_id,
         "livro_id": livro_id,
+        "dataEmprestimo": dataEmprestimo,
+        "dataDevolucao": dataDevolucao,
         "devolvido": devolvido,
-      }; 
+      };
 
   // fromJson
   factory Emprestimo.fromJson(Map<String, dynamic> json) => Emprestimo(
         id: json["id"]?.toString(),
         usuario_id: json["usuario_id"].toString(),
         livro_id: json["livro_id"].toString(),
-        devolvido: json["devolvido"] == 1 ? false : true, 
+        dataEmprestimo: json["dataEmprestimo"]?.toString() ?? "",
+        dataDevolucao: json["dataDevolucao"]?.toString() ?? "",
+        devolvido: json["devolvido"] is bool
+            ? json["devolvido"]
+            : json["devolvido"] == 1 || json["devolvido"] == "true",
       );
 }
