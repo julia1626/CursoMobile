@@ -10,26 +10,30 @@ class RegistroView extends StatefulWidget {
 
 class _RegistroViewState extends State<RegistroView> {
   //atributos
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final _emailfield = TextEditingController();
-  final _senhafield = TextEditingController();
-  final _confirmarsenhafield = TextEditingController();
+  final _emailField = TextEditingController();
+  final _senhaField = TextEditingController();
+  final _confSenhaField = TextEditingController();
+  final _authController = FirebaseAuth.instance; //controlador do Firebase Auth
+  bool _senhaOculta = true;
+  bool _confSenhaOculta = true;
 
-  void _registrar() async {
-    if (_senhafield.text != _confirmarsenhafield.text) return;
+  //método _registrar
+  void _registrar() async{
+    if(_senhaField.text != _confSenhaField.text) return;//interrompe o método se senhas diferentes
     try {
-      await _auth.createUserWithEmailAndPassword(
-        email: _emailfield.text.trim(),
-        password: _senhafield.text,
+      await _authController.createUserWithEmailAndPassword(
+        email: _emailField.text.trim(), 
+        password: _senhaField.text);
+      Navigator.pop(context); //fecha a tela de Registro
+      // é logado automaticamente após o cadastro
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Falha ao registrar: $e"))
       );
-      Navigator.pop(context);
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Erro ao Registrar: $e")));
     }
   }
 
+  //build da tela
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,36 +41,48 @@ class _RegistroViewState extends State<RegistroView> {
       body: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
-              controller: _emailfield,
+              controller: _emailField,
               decoration: InputDecoration(labelText: "Email"),
               keyboardType: TextInputType.emailAddress,
             ),
             TextField(
-              controller: _senhafield,
-              decoration: InputDecoration(labelText: "Senha"),
-              obscureText: true,
+              controller: _senhaField,
+              decoration: InputDecoration(
+                labelText: "Senha",
+                suffix: IconButton(
+                  onPressed: () => setState(() {
+                    _senhaOculta =
+                        !_senhaOculta; //inverte o valor da variável booleana
+                  }),
+                  icon: _senhaOculta
+                      ? Icon(Icons.visibility)
+                      : Icon(Icons.visibility_off),
+                ),
+              ),
+              obscureText: _senhaOculta,
             ),
             TextField(
-              controller: _confirmarsenhafield,
-              decoration: InputDecoration(labelText: "Confirmar Senha"),
-              obscureText: true,
+              controller: _confSenhaField,
+              decoration: InputDecoration(
+                labelText: "Senha",
+                suffix: IconButton(
+                  onPressed: () => setState(() {
+                    _confSenhaOculta =
+                        !_confSenhaOculta; //inverte o valor da variável booleana
+                  }),
+                  icon: _confSenhaOculta
+                      ? Icon(Icons.visibility)
+                      : Icon(Icons.visibility_off),
+                ),
+              ),
+              obscureText: _confSenhaOculta,
             ),
+
             SizedBox(height: 20),
-            _senhafield.text != _confirmarsenhafield.text
-                ? Text(
-                    "As senhas devem ser iguais",
-                    style: TextStyle(color: Colors.red),
-                  )
-                : ElevatedButton(
-                    onPressed: _registrar,
-                    child: Text("Registrar"),
-                  ),
-            TextButton(
-              onPressed: () => Navigator.pop,
-              child: Text("Já tem uma conta? Faça o Login Aqui"),
-            ),
+            ElevatedButton(onPressed: _registrar, child: Text("Registrar")),
           ],
         ),
       ),
